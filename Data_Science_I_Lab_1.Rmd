@@ -1,5 +1,6 @@
 ---
 title: "Data_Science_I_Lab_1"
+subtitle: "GitHub Link - https://github.com/ashleymaree/Lab_1.git"
 author: "Ashley Anderson"
 date: "10/7/2020"
 output: html_document
