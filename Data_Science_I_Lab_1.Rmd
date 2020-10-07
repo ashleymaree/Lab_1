@@ -1,0 +1,48 @@
+---
+title: "Data_Science_I_Lab_1"
+author: "Ashley Anderson"
+date: "10/7/2020"
+output: html_document
+---
+
+```{r,echo=FALSE}
+knitr::opts_chunk$set(cache=TRUE, error=FALSE, message=FALSE, warning=FALSE, tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+
+## Load in required packages
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(mdsr)
+```
+
+## Wrangling the data
+
+```{r}
+DeadestNames <- make_babynames_dist() ## Create the dataframe
+DeadestNames_TopTen <- DeadestNames %>%
+  group_by(sex, name) %>% ## Group dataframe by sex and name
+  summarize(N = sum(n), sum(est_alive_today), est_dead_today_pct = (sum(n)-sum(est_alive_today))/sum(n)) %>% ## Calculate total number of people with each name and percent of people who are dead today
+  filter(N > 100000) %>% ## Filter for top 100,000 names
+  arrange(desc(est_dead_today_pct)) %>% ## Arrange from highest percentage to lowest percentage
+  top_n(10) ## Select the top 10 'deadest' names in each group
+```
+
+## Making the plot
+
+```{r}
+DeadestNames_Final <- DeadestNames_TopTen %>% ggplot(aes(x=reorder(name, est_dead_today_pct), y=est_dead_today_pct, fill=sex)) + ## Initiate ggplot reordering names by percent dead today
+  geom_bar(stat='identity') + ## Plot the data using a bar graph
+  coord_flip() + ## Flip the x and y coordinates
+  scale_fill_manual(values = c("#e1ad01", "#1C86EE")) + ## Color the bars blue and yellow by sex using hex codes
+  ylab(NULL) + xlab(NULL) + ## Removed x and y axis labels
+  labs(title="Deadest Names", subtitle="Estimated percentage of Americans with a given name born since \n1900 who were dead as of Jan. 1, 2014") + ## Added title and subtitle
+  geom_text(aes(label=sprintf("%0.1f%%", round(est_dead_today_pct * 100, digits=1))), hjust = 0, size=2.6) ##  add percentage figures to graph
+DeadestNames_Final + theme(plot.title = element_text(face="bold"), ## Bold the main title
+legend.position = "none", ## Remove the legend
+axis.text.y = element_text(color="black"), ## Change color of y-axis labels
+axis.text.x = element_blank(), axis.ticks=element_blank(), ## Remove x-axis labels and x-axis ticks
+plot.background = element_rect(fill = "gray89", color="gray89"), panel.background = element_rect(fill = "gray89", color="gray89"), ## Fill in background of graph and surrounding area with gray
+panel.grid.major = element_blank(), panel.grid.minor = element_blank()) ## Remove gridlines
+```
